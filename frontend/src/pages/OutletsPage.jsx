@@ -4,6 +4,7 @@ import { api } from "../api";
 import { C, btn, input, card } from "../styles";
 import { useApp } from "../contexts/AppContext";
 import { PageHeader, Empty, Alert } from "../components/UI";
+import { Store, Plus, Trash2 } from "../icons";
 
 export default function OutletsPage() {
   const { outlets, refreshOutlets } = useApp();
@@ -11,6 +12,7 @@ export default function OutletsPage() {
   const [address, setAddress] = useState("");
   const [error, setError]     = useState("");
   const [adding, setAdding]   = useState(false);
+  const [showForm, setShowForm] = useState(false);
 
   const add = async () => {
     if (!name.trim()) return;
@@ -18,7 +20,7 @@ export default function OutletsPage() {
     const r = await api.addOutlet({ name: name.trim(), address: address.trim() });
     setAdding(false);
     if (r.error) { setError(r.error); return; }
-    setName(""); setAddress("");
+    setName(""); setAddress(""); setShowForm(false);
     refreshOutlets();
   };
 
@@ -29,40 +31,109 @@ export default function OutletsPage() {
   };
 
   return (
-    <div style={{ padding: "28px 32px", maxWidth: 680 }}>
-      <PageHeader title="Outlets" subtitle="Manage your store locations" />
+    <div className="si-page" style={{ padding: "32px 36px", maxWidth: 860 }}>
+      <PageHeader
+        title="Outlets"
+        subtitle="Manage your store locations"
+        actions={
+          <button className="si-btn-primary" style={btn("primary")}
+            onClick={() => setShowForm(v => !v)}>
+            <Plus size={14} /> {showForm ? "Cancel" : "Add Outlet"}
+          </button>
+        }
+      />
 
       {/* Add form */}
-      <div style={{ ...card(), marginBottom: 24 }}>
-        <div style={{ fontFamily: "'Syne',sans-serif", fontWeight: 700, marginBottom: 14, fontSize: 14 }}>
-          Add New Outlet
+      {showForm && (
+        <div className="si-slide" style={{ ...card(), marginBottom: 22, borderColor: `${C.accent}22` }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: C.muted, letterSpacing: 1, textTransform: "uppercase", marginBottom: 14 }}>
+            New Outlet
+          </div>
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+            <input className="si-input" style={{ ...input(), maxWidth: 200 }} placeholder="Outlet name *"
+              value={name} onChange={e => setName(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && add()} />
+            <input className="si-input" style={{ ...input(), maxWidth: 300 }} placeholder="Address (optional)"
+              value={address} onChange={e => setAddress(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && add()} />
+            <button className="si-btn-primary" style={btn("primary")}
+              onClick={add} disabled={adding || !name.trim()}>
+              {adding
+                ? <><div style={{ width:14, height:14, border:"2px solid rgba(255,255,255,.3)", borderTopColor:"#fff", borderRadius:"50%", animation:"spin .7s linear infinite" }} /> Adding…</>
+                : <><Plus size={14} /> Add</>
+              }
+            </button>
+          </div>
+          {error && <div style={{ marginTop: 10 }}><Alert type="error" onClose={() => setError("")}>{error}</Alert></div>}
         </div>
-        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-          <input style={{ ...input(), maxWidth: 200 }} placeholder="Outlet name *"
-            value={name} onChange={e => setName(e.target.value)}
-            onKeyDown={e => e.key === "Enter" && add()} />
-          <input style={{ ...input(), maxWidth: 280 }} placeholder="Address (optional)"
-            value={address} onChange={e => setAddress(e.target.value)}
-            onKeyDown={e => e.key === "Enter" && add()} />
-          <button style={btn("primary")} onClick={add} disabled={adding || !name.trim()}>
-            {adding ? "Adding…" : "Add Outlet"}
-          </button>
-        </div>
-        {error && <div style={{ color: C.red, fontSize: 12, marginTop: 8 }}>{error}</div>}
-      </div>
+      )}
 
-      {/* List */}
+      {/* Grid */}
       {outlets.length === 0
-        ? <Empty icon="🏪" message="No outlets yet. Add your first store location above." />
+        ? (
+          <div style={{ ...card(), textAlign: "center", padding: "52px 32px" }}>
+            <div style={{
+              width: 56, height: 56, borderRadius: 16, margin: "0 auto 16px",
+              background: C.border + "80",
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }}>
+              <Store size={24} stroke={C.muted} />
+            </div>
+            <div style={{ fontSize: 15, fontWeight: 600, color: C.textSoft, marginBottom: 6 }}>No outlets yet</div>
+            <div style={{ color: C.muted, fontSize: 13, marginBottom: 20 }}>Add your first store location to get started</div>
+            <button className="si-btn-primary" style={{ ...btn("primary"), margin: "0 auto" }}
+              onClick={() => setShowForm(true)}>
+              <Plus size={14} /> Add your first outlet
+            </button>
+          </div>
+        )
         : (
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(280px,1fr))", gap: 14 }}>
             {outlets.map(o => (
-              <div key={o.id} style={{ ...card(), display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 20px" }}>
-                <div>
-                  <div style={{ fontWeight: 600, marginBottom: 2 }}>{o.name}</div>
-                  {o.address && <div style={{ color: C.muted, fontSize: 12 }}>{o.address}</div>}
+              <div key={o.id} className="si-outlet-card" style={{
+                ...card(), padding: "20px 22px", position: "relative",
+              }}>
+                {/* Delete btn — revealed on hover via CSS */}
+                <button className="si-outlet-del si-btn-danger" style={{
+                  ...btn("danger"), position: "absolute", top: 14, right: 14,
+                  padding: "5px 8px", fontSize: 12, opacity: 0,
+                }} onClick={() => del(o.id, o.name)}>
+                  <Trash2 size={13} />
+                </button>
+
+                {/* Icon + name */}
+                <div style={{ display: "flex", alignItems: "flex-start", gap: 14, marginBottom: 14 }}>
+                  <div style={{
+                    width: 42, height: 42, borderRadius: 12, flexShrink: 0,
+                    background: "linear-gradient(135deg,rgba(59,130,246,.15),rgba(99,102,241,.1))",
+                    border: `1px solid rgba(59,130,246,.18)`,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                  }}>
+                    <Store size={18} stroke={C.accent} />
+                  </div>
+                  <div style={{ minWidth: 0, paddingRight: 36 }}>
+                    <div style={{ fontWeight: 700, fontSize: 15, color: C.text, marginBottom: 3 }}>{o.name}</div>
+                    {o.address
+                      ? <div style={{ color: C.muted, fontSize: 12, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{o.address}</div>
+                      : <div style={{ color: C.border, fontSize: 12, fontStyle: "italic" }}>No address</div>
+                    }
+                  </div>
                 </div>
-                <button style={btn("danger")} onClick={() => del(o.id, o.name)}>Delete</button>
+
+                <div style={{ height: 1, background: C.border, marginBottom: 12 }} />
+
+                <div style={{ display: "flex", gap: 16 }}>
+                  <div>
+                    <div style={{ fontSize: 10, color: C.muted, letterSpacing: 1, textTransform: "uppercase", fontWeight: 600, marginBottom: 3 }}>ID</div>
+                    <div style={{ fontSize: 13, color: C.textSoft }}>#{o.id}</div>
+                  </div>
+                  {o.manager && (
+                    <div>
+                      <div style={{ fontSize: 10, color: C.muted, letterSpacing: 1, textTransform: "uppercase", fontWeight: 600, marginBottom: 3 }}>Manager</div>
+                      <div style={{ fontSize: 13, color: C.textSoft }}>{o.manager}</div>
+                    </div>
+                  )}
+                </div>
               </div>
             ))}
           </div>

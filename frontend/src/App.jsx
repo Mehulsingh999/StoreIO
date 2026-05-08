@@ -1,20 +1,26 @@
 // src/App.jsx
 import { useState } from "react";
 import { BrowserRouter, Routes, Route, NavLink, Navigate } from "react-router-dom";
-import { api }          from "./api";
-import { C, btn, input } from "./styles";
-import { AppProvider }  from "./contexts/AppContext";
+import { api } from "./api";
+import { C, btn, input, injectGlobalStyles } from "./styles";
+import { AppProvider } from "./contexts/AppContext";
+import {
+  LayoutDashboard, Package, Store, Upload, Bot, LogOut, Eye, EyeOff,
+} from "./icons";
 import Dashboard    from "./pages/Dashboard";
 import InventoryPage from "./pages/InventoryPage";
 import ImportPage   from "./pages/ImportPage";
 import ChatPage     from "./pages/ChatPage";
 import OutletsPage  from "./pages/OutletsPage";
 
+injectGlobalStyles();
+
 // ── Login ─────────────────────────────────────────────────────────────────────
 function Login({ onLogin }) {
-  const [form, setForm]     = useState({ username: "boss", password: "" });
-  const [error, setError]   = useState("");
+  const [form, setForm]       = useState({ username: "boss", password: "" });
+  const [error, setError]     = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPw, setShowPw]   = useState(false);
 
   const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }));
 
@@ -30,24 +36,122 @@ function Login({ onLogin }) {
   };
 
   return (
-    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: C.bg }}>
-      <div style={{ width: 360, background: "#0d1117", border: `1px solid ${C.border}`, borderRadius: 20, padding: 36 }}>
-        <div style={{ textAlign: "center", marginBottom: 32 }}>
-          <div style={{ fontSize: 40, marginBottom: 10 }}>🏪</div>
-          <h1 style={{ fontFamily: "'Syne',sans-serif", fontSize: 24, fontWeight: 800, marginBottom: 4 }}>StoreIO</h1>
-          <p style={{ color: C.muted, fontSize: 13 }}>Inventory Management System</p>
+    <div style={{
+      minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center",
+      background: C.bg, position: "relative", overflow: "hidden",
+    }}>
+      {/* Ambient glow orbs */}
+      <div style={{ position:"absolute", width:700, height:700, borderRadius:"50%", top:-200, right:-200,
+        background:"radial-gradient(circle,rgba(59,130,246,.1) 0%,transparent 68%)", pointerEvents:"none" }} />
+      <div style={{ position:"absolute", width:550, height:550, borderRadius:"50%", bottom:-220, left:-180,
+        background:"radial-gradient(circle,rgba(139,92,246,.09) 0%,transparent 68%)", pointerEvents:"none" }} />
+      <div style={{ position:"absolute", width:400, height:400, borderRadius:"50%", top:"45%", left:"62%",
+        background:"radial-gradient(circle,rgba(6,182,212,.07) 0%,transparent 68%)", pointerEvents:"none" }} />
+
+      {/* Glass card */}
+      <div style={{
+        width: 420, position: "relative", zIndex: 1,
+        background: "rgba(13,17,23,0.85)",
+        backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)",
+        border: "1px solid rgba(59,130,246,.18)",
+        borderRadius: 22,
+        padding: "42px 38px",
+        boxShadow: "0 8px 40px rgba(0,0,0,.65), inset 0 1px 0 rgba(255,255,255,.05)",
+        animation: "slideUp .32s ease",
+      }}>
+        {/* Brand */}
+        <div style={{ textAlign:"center", marginBottom:34 }}>
+          <div style={{
+            width: 52, height: 52, borderRadius: 14, margin: "0 auto 16px",
+            background: "linear-gradient(135deg,#3b82f6,#6366f1)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            boxShadow: "0 4px 16px rgba(59,130,246,.4)",
+          }}>
+            <Package size={24} stroke="#fff" />
+          </div>
+          <h1 style={{
+            fontFamily: "'Syne',sans-serif", fontSize: 28, fontWeight: 800, marginBottom: 6,
+            background: "linear-gradient(135deg,#e2e8f0,#94a3b8)",
+            WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+            backgroundClip: "text",
+          }}>StoreIO</h1>
+          <p style={{ color: C.muted, fontSize: 13 }}>Inventory Management Platform</p>
         </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          <input style={input()} placeholder="Username" value={form.username}
-            onChange={set("username")} />
-          <input style={input()} type="password" placeholder="Password" value={form.password}
-            onChange={set("password")} onKeyDown={e => e.key === "Enter" && login()} />
-          {error && <div style={{ color: C.red, fontSize: 12 }}>{error}</div>}
-          <button style={{ ...btn("primary"), padding: 12, marginTop: 4, justifyContent: "center" }}
-            onClick={login} disabled={loading}>
-            {loading ? "Logging in…" : "Login"}
+
+        {/* Form */}
+        <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
+          <div>
+            <label style={{ display:"block", fontSize:11, fontWeight:600, color:C.muted, letterSpacing:.8, marginBottom:6, textTransform:"uppercase" }}>
+              Username
+            </label>
+            <input
+              className="si-input"
+              style={{ ...input(), letterSpacing: .3 }}
+              placeholder="Enter username"
+              value={form.username}
+              onChange={set("username")}
+              onKeyDown={e => e.key === "Enter" && login()}
+            />
+          </div>
+
+          <div>
+            <label style={{ display:"block", fontSize:11, fontWeight:600, color:C.muted, letterSpacing:.8, marginBottom:6, textTransform:"uppercase" }}>
+              Password
+            </label>
+            <div style={{ position:"relative" }}>
+              <input
+                className="si-input"
+                style={{ ...input(), paddingRight: 42, letterSpacing: .3 }}
+                type={showPw ? "text" : "password"}
+                placeholder="Enter password"
+                value={form.password}
+                onChange={set("password")}
+                onKeyDown={e => e.key === "Enter" && login()}
+              />
+              <button
+                onClick={() => setShowPw(v => !v)}
+                style={{
+                  position:"absolute", right:12, top:"50%", transform:"translateY(-50%)",
+                  background:"none", border:"none", color:C.muted, cursor:"pointer",
+                  padding:2, display:"flex", alignItems:"center", transition:"color .15s",
+                }}
+                tabIndex={-1}
+              >
+                {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
+          </div>
+
+          {error && (
+            <div style={{
+              display:"flex", alignItems:"center", gap:8,
+              background:"rgba(239,68,68,.1)", border:"1px solid rgba(239,68,68,.3)",
+              borderRadius:8, padding:"10px 14px", fontSize:13, color:C.red,
+            }}>
+              <span style={{ fontSize:15 }}>⚠</span> {error}
+            </div>
+          )}
+
+          <button
+            className="si-btn-primary"
+            style={{
+              ...btn("primary"),
+              padding: "13px 20px", marginTop: 4, justifyContent: "center",
+              fontSize: 14, fontWeight: 600, borderRadius: 10,
+              background: "linear-gradient(135deg,#3b82f6,#6366f1)",
+            }}
+            onClick={login}
+            disabled={loading}
+          >
+            {loading
+              ? <><div style={{ width:16,height:16,border:"2px solid rgba(255,255,255,.3)",borderTopColor:"#fff",borderRadius:"50%",animation:"spin .7s linear infinite" }} /> Signing in…</>
+              : "Sign in"
+            }
           </button>
-          <p style={{ color: "#2d4060", fontSize: 11, textAlign: "center" }}>Default: boss / boss123</p>
+
+          <p style={{ color:"rgba(100,116,139,.5)", fontSize:11, textAlign:"center", paddingTop:4 }}>
+            Default credentials: <span style={{ color:C.muted }}>boss / boss123</span>
+          </p>
         </div>
       </div>
     </div>
@@ -56,47 +160,90 @@ function Login({ onLogin }) {
 
 // ── Sidebar ───────────────────────────────────────────────────────────────────
 const NAV = [
-  { to: "/",          icon: "⬛", label: "Dashboard" },
-  { to: "/inventory", icon: "📦", label: "Inventory"  },
-  { to: "/outlets",   icon: "🏪", label: "Outlets"    },
-  { to: "/import",    icon: "📥", label: "Import"     },
-  { to: "/chat",      icon: "🤖", label: "AI Chat"    },
+  { to: "/",          Icon: LayoutDashboard, label: "Dashboard" },
+  { to: "/inventory", Icon: Package,          label: "Inventory"  },
+  { to: "/outlets",   Icon: Store,            label: "Outlets"    },
+  { to: "/import",    Icon: Upload,           label: "Import"     },
+  { to: "/chat",      Icon: Bot,              label: "AI Chat"    },
 ];
 
 function Sidebar({ user, onLogout }) {
+  const initial = user.username?.[0]?.toUpperCase() ?? "?";
+
   return (
     <div style={{
-      width: 220, minHeight: "100vh",
-      background: "#0d1117", borderRight: `1px solid ${C.border}`,
+      width: 240, minHeight: "100vh",
+      background: "#0a0e14",
+      borderRight: "1px solid rgba(30,45,61,.8)",
       display: "flex", flexDirection: "column",
-      padding: "24px 16px", flexShrink: 0,
+      padding: "22px 14px", flexShrink: 0,
+      boxShadow: "2px 0 20px rgba(0,0,0,.3)",
     }}>
-      <div style={{ marginBottom: 32, paddingLeft: 8 }}>
-        <div style={{ fontFamily: "'Syne',sans-serif", fontSize: 18, fontWeight: 800, letterSpacing: -0.5 }}>StoreIO</div>
-        <div style={{ color: C.muted, fontSize: 11, marginTop: 2 }}>Inventory Platform</div>
+      {/* Brand */}
+      <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:32, paddingLeft:6 }}>
+        <div style={{
+          width:32, height:32, borderRadius:9,
+          background:"linear-gradient(135deg,#3b82f6,#6366f1)",
+          display:"flex", alignItems:"center", justifyContent:"center",
+          boxShadow:"0 2px 10px rgba(59,130,246,.35)", flexShrink:0,
+        }}>
+          <Package size={16} stroke="#fff" />
+        </div>
+        <div>
+          <div style={{ fontFamily:"'Syne',sans-serif", fontSize:16, fontWeight:800, letterSpacing:-.3, color:C.text }}>
+            StoreIO
+          </div>
+          <div style={{ color:C.muted, fontSize:10, fontWeight:500, letterSpacing:.4 }}>INVENTORY PLATFORM</div>
+        </div>
       </div>
 
-      <nav style={{ flex: 1, display: "flex", flexDirection: "column", gap: 4 }}>
+      {/* Nav */}
+      <nav style={{ flex:1, display:"flex", flexDirection:"column", gap:2 }}>
         {NAV.map(n => (
-          <NavLink key={n.to} to={n.to} end={n.to === "/"} style={({ isActive }) => ({
-            display: "flex", alignItems: "center", gap: 10,
-            padding: "9px 12px", borderRadius: 8,
-            textDecoration: "none", fontSize: 14, transition: "all .15s",
-            background: isActive ? C.accent + "22" : "transparent",
-            color:      isActive ? C.accent          : C.muted,
-            fontWeight: isActive ? 600               : 400,
-          })}>
-            <span style={{ fontSize: 16 }}>{n.icon}</span> {n.label}
+          <NavLink
+            key={n.to} to={n.to} end={n.to === "/"}
+            className={({ isActive }) => `si-nav-link${isActive ? " si-nav-active" : ""}`}
+            style={({ isActive }) => ({
+              display: "flex", alignItems: "center", gap: 10,
+              padding: "9px 12px", borderRadius: 9,
+              textDecoration: "none", fontSize: 13.5, fontWeight: isActive ? 600 : 400,
+              color: isActive ? "#e2e8f0" : C.muted,
+              background: isActive ? "rgba(59,130,246,.1)" : "transparent",
+              boxShadow: isActive ? "inset 3px 0 0 #3b82f6" : "inset 3px 0 0 transparent",
+            })}
+          >
+            {({ isActive }) => (
+              <>
+                <n.Icon size={16} stroke={isActive ? C.accent : "currentColor"} />
+                {n.label}
+              </>
+            )}
           </NavLink>
         ))}
       </nav>
 
-      <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 16 }}>
-        <div style={{ fontSize: 12, color: C.muted, marginBottom: 8, paddingLeft: 4 }}>
-          {user.username} · {user.role}
+      {/* User */}
+      <div style={{ borderTop:`1px solid ${C.border}`, paddingTop:16, display:"flex", flexDirection:"column", gap:10 }}>
+        <div style={{ display:"flex", alignItems:"center", gap:10, padding:"4px 6px" }}>
+          <div style={{
+            width:32, height:32, borderRadius:"50%", flexShrink:0,
+            background:"linear-gradient(135deg,#3b82f6,#8b5cf6)",
+            display:"flex", alignItems:"center", justifyContent:"center",
+            color:"#fff", fontWeight:700, fontSize:13,
+          }}>{initial}</div>
+          <div style={{ minWidth:0 }}>
+            <div style={{ fontSize:13, fontWeight:600, color:C.text, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
+              {user.username}
+            </div>
+            <div style={{ fontSize:11, color:C.muted, textTransform:"capitalize" }}>{user.role}</div>
+          </div>
         </div>
-        <button style={{ ...btn("ghost"), width: "100%", justifyContent: "flex-start" }} onClick={onLogout}>
-          Logout
+        <button
+          className="si-btn-ghost"
+          style={{ ...btn("ghost"), width:"100%", justifyContent:"flex-start", fontSize:13, gap:8, padding:"8px 10px" }}
+          onClick={onLogout}
+        >
+          <LogOut size={14} /> Sign out
         </button>
       </div>
     </div>
@@ -120,9 +267,9 @@ export default function App() {
   return (
     <BrowserRouter>
       <AppProvider>
-        <div style={{ display: "flex", minHeight: "100vh" }}>
+        <div style={{ display:"flex", minHeight:"100vh" }}>
           <Sidebar user={user} onLogout={logout} />
-          <main style={{ flex: 1, overflowY: "auto" }}>
+          <main style={{ flex:1, overflowY:"auto", overflowX:"hidden" }}>
             <Routes>
               <Route path="/"          element={<Dashboard />} />
               <Route path="/inventory" element={<InventoryPage />} />
