@@ -153,29 +153,7 @@ Add a new product:
 - For multi-step setup (add category THEN product), include both actions in one reply — categories run first.
 - Format responses clearly using **bold** for product names and quantities.`;
 
-// ── Provider helpers ──────────────────────────────────────────────────────────
-const tryGemini = async (system, messages, key) => {
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        system_instruction: { parts: [{ text: system }] },
-        contents: messages.map(m => ({
-          role:  m.role === "assistant" ? "model" : "user",
-          parts: [{ text: m.content }],
-        })),
-        generationConfig: { maxOutputTokens: 2000, temperature: 0.7 },
-      }),
-    }
-  );
-  const data = await response.json();
-  if (!response.ok || data.error)
-    throw new Error(`Gemini error: ${data.error?.message || JSON.stringify(data)}`);
-  return data.candidates?.[0]?.content?.parts?.[0]?.text || "";
-};
-
+// ── Provider helper ───────────────────────────────────────────────────────────
 const tryAnthropic = async (system, messages, key) => {
   const response = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
@@ -203,41 +181,25 @@ router.post("/", async (req, res) => {
   if (!Array.isArray(messages) || !messages.length)
     return res.status(400).json({ error: "messages array required" });
 
-  const geminiKey    = process.env.GEMINI_API_KEY;
   const anthropicKey = process.env.ANTHROPIC_API_KEY;
 
-  console.log("Keys present:", { gemini: !!geminiKey, anthropic: !!anthropicKey });
+  console.log("Keys present:", { anthropic: !!anthropicKey });
 
-  if (!geminiKey && !anthropicKey)
-    return res.status(500).json({ error: "No API key set. Add ANTHROPIC_API_KEY or GEMINI_API_KEY to backend/.env" });
+  if (!anthropicKey)
+    return res.status(500).json({ error: "No API key set. Add ANTHROPIC_API_KEY to backend/.env" });
 
   try {
     const context = await buildContext();
     const system  = SYSTEM(context);
-    let reply    = "";
-    let provider = "";
 
-    if (geminiKey) {
-      try {
-        reply    = await tryGemini(system, messages, geminiKey);
-        provider = "gemini";
-      } catch (e) {
-        if (!anthropicKey) throw e;
-        console.warn("Gemini failed, falling back to Anthropic:", e.message);
-        reply    = await tryAnthropic(system, messages, anthropicKey);
-        provider = "anthropic";
-      }
-    } else {
-      reply    = await tryAnthropic(system, messages, anthropicKey);
-      provider = "anthropic";
-    }
+    const reply = await tryAnthropic(system, messages, anthropicKey);
 
     if (!reply) return res.status(502).json({ error: "Empty response from AI" });
 
     const actionResults = await executeActions(reply);
     const cleanReply    = reply.replace(/<action>[\s\S]*?<\/action>/g, "").trim();
 
-    res.json({ reply: cleanReply, actionResults, provider });
+    res.json({ reply: cleanReply, actionResults, provider: "anthropic" });
 
   } catch (e) {
     console.error("Chat error:", e);
