@@ -203,10 +203,12 @@ router.post("/", async (req, res) => {
   if (!Array.isArray(messages) || !messages.length)
     return res.status(400).json({ error: "messages array required" });
 
-  const anthropicKey = process.env.ANTHROPIC_API_KEY;
   const geminiKey    = process.env.GEMINI_API_KEY;
+  const anthropicKey = process.env.ANTHROPIC_API_KEY;
 
-  if (!anthropicKey && !geminiKey)
+  console.log("Keys present:", { gemini: !!geminiKey, anthropic: !!anthropicKey });
+
+  if (!geminiKey && !anthropicKey)
     return res.status(500).json({ error: "No API key set. Add ANTHROPIC_API_KEY or GEMINI_API_KEY to backend/.env" });
 
   try {
