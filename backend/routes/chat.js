@@ -153,6 +153,50 @@ Add a new product:
 - For multi-step setup (add category THEN product), include both actions in one reply — categories run first.
 - Format responses clearly using **bold** for product names and quantities.`;
 
+// ── Provider helpers ──────────────────────────────────────────────────────────
+const tryGemini = async (system, messages, key) => {
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        system_instruction: { parts: [{ text: system }] },
+        contents: messages.map(m => ({
+          role:  m.role === "assistant" ? "model" : "user",
+          parts: [{ text: m.content }],
+        })),
+        generationConfig: { maxOutputTokens: 2000, temperature: 0.7 },
+      }),
+    }
+  );
+  const data = await response.json();
+  if (!response.ok || data.error)
+    throw new Error(`Gemini error: ${data.error?.message || JSON.stringify(data)}`);
+  return data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+};
+
+const tryAnthropic = async (system, messages, key) => {
+  const response = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": key,
+      "anthropic-version": "2023-06-01",
+    },
+    body: JSON.stringify({
+      model: "claude-sonnet-4-6",
+      max_tokens: 2000,
+      system,
+      messages,
+    }),
+  });
+  const data = await response.json();
+  if (!response.ok || data.error)
+    throw new Error(`Anthropic error: ${data.error?.message || JSON.stringify(data)}`);
+  return data.content?.filter(c => c.type === "text").map(c => c.text).join("") || "";
+};
+
 // ── POST /api/chat ────────────────────────────────────────────────────────────
 router.post("/", async (req, res) => {
   const { messages } = req.body;
@@ -168,50 +212,22 @@ router.post("/", async (req, res) => {
   try {
     const context = await buildContext();
     const system  = SYSTEM(context);
-    let reply = "";
+    let reply    = "";
+    let provider = "";
 
     if (geminiKey) {
-      // ── Gemini 2.0 Flash ─────────────────────────────────────────────────
-      const response = await fetch(
-       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            system_instruction: { parts: [{ text: system }] },
-            contents: messages.map(m => ({
-              role:  m.role === "assistant" ? "model" : "user",
-              parts: [{ text: m.content }],
-            })),
-            generationConfig: { maxOutputTokens: 2000, temperature: 0.7 },
-          }),
-        }
-      );
-      const data = await response.json();
-      if (!response.ok || data.error)
-        return res.status(502).json({ error: `Gemini error: ${data.error?.message || JSON.stringify(data)}` });
-      reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
-
+      try {
+        reply    = await tryGemini(system, messages, geminiKey);
+        provider = "gemini";
+      } catch (e) {
+        if (!anthropicKey) throw e;
+        console.warn("Gemini failed, falling back to Anthropic:", e.message);
+        reply    = await tryAnthropic(system, messages, anthropicKey);
+        provider = "anthropic";
+      }
     } else {
-      // ── Anthropic Claude ──────────────────────────────────────────────────
-      const response = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": anthropicKey,
-          "anthropic-version": "2023-06-01",
-        },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-6",
-          max_tokens: 2000,
-          system,
-          messages,
-        }),
-      });
-      const data = await response.json();
-      if (!response.ok || data.error)
-        return res.status(502).json({ error: `Anthropic error: ${data.error?.message || JSON.stringify(data)}` });
-      reply = data.content?.filter(c => c.type === "text").map(c => c.text).join("") || "";
+      reply    = await tryAnthropic(system, messages, anthropicKey);
+      provider = "anthropic";
     }
 
     if (!reply) return res.status(502).json({ error: "Empty response from AI" });
@@ -219,7 +235,7 @@ router.post("/", async (req, res) => {
     const actionResults = await executeActions(reply);
     const cleanReply    = reply.replace(/<action>[\s\S]*?<\/action>/g, "").trim();
 
-    res.json({ reply: cleanReply, actionResults, provider: geminiKey ? "gemini" : "anthropic" });
+    res.json({ reply: cleanReply, actionResults, provider });
 
   } catch (e) {
     console.error("Chat error:", e);
