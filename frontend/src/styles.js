@@ -141,6 +141,35 @@ export const injectGlobalStyles = () => {
 
     .si-drop-zone { transition: all .2s ease !important; }
     .si-drop-zone:hover { border-color: rgba(59,130,246,.5) !important; background: rgba(59,130,246,.04) !important; }
+
+    /* ── Typography ── */
+    .si-gradient-title {
+      background: linear-gradient(130deg,#f8fafc 0%,#94a3b8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-family: 'Space Grotesk', sans-serif !important;
+    }
+    .si-section-title { font-family: 'Space Grotesk', sans-serif !important; font-weight: 600 !important; }
+
+    /* ── Stat number gradients ── */
+    .si-num-blue   { background:linear-gradient(135deg,#60a5fa,#818cf8); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+    .si-num-green  { background:linear-gradient(135deg,#34d399,#22d3ee); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+    .si-num-purple { background:linear-gradient(135deg,#a78bfa,#c084fc); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+    .si-num-red    { background:linear-gradient(135deg,#f87171,#fb923c); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+    .si-num-yellow { background:linear-gradient(135deg,#fbbf24,#f97316); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+
+    /* ── Enhanced hovers ── */
+    .si-btn-primary:hover:not(:disabled) {
+      filter: brightness(1.16);
+      box-shadow: 0 0 28px rgba(59,130,246,.45), 0 4px 16px rgba(0,0,0,.35) !important;
+      transform: translateY(-1px);
+    }
+    .si-card-hover:hover {
+      border-color: rgba(59,130,246,.3) !important;
+      transform: translateY(-2px);
+      box-shadow: 0 14px 44px rgba(0,0,0,.55), 0 0 0 1px rgba(59,130,246,.1) !important;
+    }
   `;
   document.head.appendChild(s);
 };
@@ -150,6 +179,7 @@ export const injectGlobalStyles = () => {
 export const btn = (variant = "primary", extra = {}) => ({
   padding: "9px 18px", borderRadius: 8, border: "none",
   cursor: "pointer", fontSize: 13, fontWeight: 500,
+  fontFamily: "'Space Grotesk',sans-serif", letterSpacing: .1,
   display: "inline-flex", alignItems: "center", gap: 6,
   ...(variant === "primary" ? {
     background: "linear-gradient(135deg,#3b82f6,#6366f1)",
@@ -179,13 +209,14 @@ export const input = (extra = {}) => ({
   padding: "9px 14px", borderRadius: 8,
   background: C.surface, border: `1px solid ${C.border}`,
   color: C.text, fontSize: 13, outline: "none", width: "100%",
+  fontFamily: "'Space Grotesk',sans-serif",
   ...extra,
 });
 
 export const card = (extra = {}) => ({
   background: C.card, border: `1px solid ${C.border}`,
   borderRadius: 14, padding: 20,
-  boxShadow: "0 2px 12px rgba(0,0,0,.28)",
+  boxShadow: "0 2px 16px rgba(0,0,0,.32), inset 0 1px 0 rgba(255,255,255,.03)",
   ...extra,
 });
 

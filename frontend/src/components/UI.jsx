@@ -2,6 +2,15 @@
 import { C, card } from "../styles";
 import { CheckCircle, AlertTriangle, X } from "../icons";
 
+const NUM_CLASS = {
+  [C.accent]:  "si-num-blue",
+  [C.green]:   "si-num-green",
+  [C.purple]:  "si-num-purple",
+  [C.red]:     "si-num-red",
+  [C.yellow]:  "si-num-yellow",
+  [C.cyan]:    "si-num-green",
+};
+
 export const PageHeader = ({ title, subtitle, actions }) => (
   <div style={{
     display: "flex", justifyContent: "space-between", alignItems: "flex-start",
@@ -9,9 +18,8 @@ export const PageHeader = ({ title, subtitle, actions }) => (
     borderBottom: `1px solid ${C.border}`,
   }}>
     <div>
-      <h1 style={{
-        fontFamily: "'Syne',sans-serif", fontSize: 24, fontWeight: 800, marginBottom: 5,
-        color: C.text, letterSpacing: -.3,
+      <h1 className="si-gradient-title" style={{
+        fontSize: 24, fontWeight: 700, marginBottom: 5, letterSpacing: -.4,
       }}>{title}</h1>
       {subtitle && <p style={{ color: C.muted, fontSize: 13 }}>{subtitle}</p>}
     </div>
@@ -100,9 +108,10 @@ export const StatCard = ({ label, value, color = C.accent, icon: Icon, trend }) 
         <div style={{ fontSize: 10, color: C.muted, letterSpacing: 1.1, textTransform: "uppercase", fontWeight: 600, marginBottom: 10 }}>
           {label}
         </div>
-        <div style={{
-          fontSize: 30, fontWeight: 800, fontFamily: "'Syne',sans-serif",
-          color, lineHeight: 1,
+        <div className={NUM_CLASS[color] ?? ""} style={{
+          fontSize: 32, fontWeight: 700, fontFamily: "'Space Grotesk',sans-serif",
+          color: NUM_CLASS[color] ? undefined : color,
+          lineHeight: 1, letterSpacing: -.5,
         }}>
           {value}
         </div>

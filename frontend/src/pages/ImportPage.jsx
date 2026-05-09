@@ -31,7 +31,7 @@ const Step = ({ num, title, children }) => (
     </div>
     {/* Content */}
     <div style={{ flex: 1, paddingBottom: 24 }}>
-      <div style={{ fontFamily: "'Syne',sans-serif", fontWeight: 700, fontSize: 15, marginBottom: 12, marginTop: 6 }}>
+      <div className="si-section-title" style={{ fontSize: 15, marginBottom: 12, marginTop: 6 }}>
         {title}
       </div>
       {children}
@@ -189,7 +189,7 @@ export default function ImportPage() {
                 ].map(({ label, value, color }) => (
                   <div key={label}>
                     <div style={{
-                      fontSize: 28, fontWeight: 800, fontFamily: "'Syne',sans-serif",
+                      fontSize: 30, fontWeight: 700, fontFamily: "'Space Grotesk',sans-serif",
                       color, lineHeight: 1,
                     }}>{value}</div>
                     <div style={{ color: C.muted, fontSize: 11, fontWeight: 600, letterSpacing: 1, textTransform: "uppercase", marginTop: 4 }}>

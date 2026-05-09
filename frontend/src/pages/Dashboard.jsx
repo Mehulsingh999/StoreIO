@@ -52,7 +52,7 @@ export default function Dashboard() {
         display: "flex", justifyContent: "space-between", alignItems: "center",
       }}>
         <div>
-          <div style={{ fontSize: 20, fontFamily: "'Syne',sans-serif", fontWeight: 800, marginBottom: 4 }}>
+          <div className="si-gradient-title" style={{ fontSize: 22, fontWeight: 700, marginBottom: 4, letterSpacing: -.3 }}>
             {greeting()}, {user?.username ?? "there"} 👋
           </div>
           <div style={{ color: C.muted, fontSize: 13 }}>
@@ -100,7 +100,7 @@ export default function Dashboard() {
             }}>
               <AlertTriangle size={14} stroke={C.red} />
             </div>
-            <span style={{ fontFamily: "'Syne',sans-serif", fontWeight: 700, fontSize: 14 }}>Low Stock</span>
+            <span className="si-section-title" style={{ fontSize: 14 }}>Low Stock</span>
             {alerts.length > 0 && (
               <span style={{
                 marginLeft: "auto", background: C.red + "20", color: C.red,
@@ -152,7 +152,7 @@ export default function Dashboard() {
             }}>
               <Activity size={14} stroke={C.accent} />
             </div>
-            <span style={{ fontFamily: "'Syne',sans-serif", fontWeight: 700, fontSize: 14 }}>Recent Activity</span>
+            <span className="si-section-title" style={{ fontSize: 14 }}>Recent Activity</span>
           </div>
 
           {loading
@@ -211,7 +211,7 @@ export default function Dashboard() {
             }}>
               <Store size={14} stroke={C.purple} />
             </div>
-            <span style={{ fontFamily: "'Syne',sans-serif", fontWeight: 700, fontSize: 14 }}>Outlet Summary</span>
+            <span className="si-section-title" style={{ fontSize: 14 }}>Outlet Summary</span>
           </div>
 
           {loading

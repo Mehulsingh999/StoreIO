@@ -156,7 +156,7 @@ export default function ChatPage() {
             <Bot size={18} stroke="#fff" />
           </div>
           <div>
-            <h1 style={{ fontFamily: "'Syne',sans-serif", fontSize: 18, fontWeight: 800, lineHeight: 1.2 }}>AI Assistant</h1>
+            <h1 className="si-gradient-title" style={{ fontSize: 18, fontWeight: 700, lineHeight: 1.2, letterSpacing: -.3 }}>AI Assistant</h1>
             <p style={{ color: C.muted, fontSize: 12, marginTop: 2 }}>
               {provider ? `Powered by ${provider === "gemini" ? "Gemini 2.0 Flash" : "Claude"}` : "Reads and writes live inventory data"}
             </p>

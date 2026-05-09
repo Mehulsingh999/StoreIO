@@ -70,12 +70,13 @@ function Login({ onLogin }) {
             <Package size={24} stroke="#fff" />
           </div>
           <h1 style={{
-            fontFamily: "'Syne',sans-serif", fontSize: 28, fontWeight: 800, marginBottom: 6,
-            background: "linear-gradient(135deg,#e2e8f0,#94a3b8)",
+            fontFamily: "'Syne',sans-serif", fontSize: 32, fontWeight: 800, marginBottom: 6,
+            letterSpacing: -1,
+            background: "linear-gradient(135deg,#f1f5f9 0%,#93c5fd 50%,#a5b4fc 100%)",
             WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
             backgroundClip: "text",
           }}>StoreIO</h1>
-          <p style={{ color: C.muted, fontSize: 13 }}>Inventory Management Platform</p>
+          <p style={{ color: C.muted, fontSize: 13, letterSpacing: .2 }}>Inventory Management Platform</p>
         </div>
 
         {/* Form */}
@@ -173,7 +174,7 @@ function Sidebar({ user, onLogout }) {
   return (
     <div style={{
       width: 240, minHeight: "100vh",
-      background: "#0a0e14",
+      background: "linear-gradient(180deg,#0c1018 0%,#080c12 60%,#060910 100%)",
       borderRight: "1px solid rgba(30,45,61,.8)",
       display: "flex", flexDirection: "column",
       padding: "22px 14px", flexShrink: 0,
@@ -190,10 +191,12 @@ function Sidebar({ user, onLogout }) {
           <Package size={16} stroke="#fff" />
         </div>
         <div>
-          <div style={{ fontFamily:"'Syne',sans-serif", fontSize:16, fontWeight:800, letterSpacing:-.3, color:C.text }}>
+          <div style={{ fontFamily:"'Syne',sans-serif", fontSize:16, fontWeight:800, letterSpacing:-.4,
+            background:"linear-gradient(135deg,#f1f5f9,#93c5fd)", WebkitBackgroundClip:"text",
+            WebkitTextFillColor:"transparent", backgroundClip:"text" }}>
             StoreIO
           </div>
-          <div style={{ color:C.muted, fontSize:10, fontWeight:500, letterSpacing:.4 }}>INVENTORY PLATFORM</div>
+          <div style={{ color:C.muted, fontSize:10, fontWeight:600, letterSpacing:.8, fontFamily:"'Space Grotesk',sans-serif" }}>INVENTORY PLATFORM</div>
         </div>
       </div>
 
@@ -206,10 +209,11 @@ function Sidebar({ user, onLogout }) {
             style={({ isActive }) => ({
               display: "flex", alignItems: "center", gap: 10,
               padding: "9px 12px", borderRadius: 9,
-              textDecoration: "none", fontSize: 13.5, fontWeight: isActive ? 600 : 400,
-              color: isActive ? "#e2e8f0" : C.muted,
-              background: isActive ? "rgba(59,130,246,.1)" : "transparent",
-              boxShadow: isActive ? "inset 3px 0 0 #3b82f6" : "inset 3px 0 0 transparent",
+              textDecoration: "none", fontSize: 13, fontWeight: isActive ? 600 : 400,
+              fontFamily: "'Space Grotesk',sans-serif", letterSpacing: .1,
+              color: isActive ? "#f1f5f9" : C.muted,
+              background: isActive ? "rgba(59,130,246,.12)" : "transparent",
+              boxShadow: isActive ? "inset 3px 0 0 #3b82f6, 4px 0 18px rgba(59,130,246,.07)" : "inset 3px 0 0 transparent",
             })}
           >
             {({ isActive }) => (
@@ -232,10 +236,10 @@ function Sidebar({ user, onLogout }) {
             color:"#fff", fontWeight:700, fontSize:13,
           }}>{initial}</div>
           <div style={{ minWidth:0 }}>
-            <div style={{ fontSize:13, fontWeight:600, color:C.text, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
+            <div style={{ fontSize:13, fontWeight:600, color:C.text, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", fontFamily:"'Space Grotesk',sans-serif" }}>
               {user.username}
             </div>
-            <div style={{ fontSize:11, color:C.muted, textTransform:"capitalize" }}>{user.role}</div>
+            <div style={{ fontSize:11, color:C.muted, textTransform:"capitalize", fontFamily:"'Space Grotesk',sans-serif", letterSpacing:.2 }}>{user.role}</div>
           </div>
         </div>
         <button
@@ -269,7 +273,11 @@ export default function App() {
       <AppProvider>
         <div style={{ display:"flex", minHeight:"100vh" }}>
           <Sidebar user={user} onLogout={logout} />
-          <main style={{ flex:1, overflowY:"auto", overflowX:"hidden" }}>
+          <main style={{
+            flex:1, overflowY:"auto", overflowX:"hidden",
+            backgroundImage: "radial-gradient(rgba(255,255,255,.022) 1px,transparent 1px)",
+            backgroundSize: "28px 28px",
+          }}>
             <Routes>
               <Route path="/"          element={<Dashboard />} />
               <Route path="/inventory" element={<InventoryPage />} />
