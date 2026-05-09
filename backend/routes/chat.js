@@ -184,6 +184,7 @@ router.post("/", async (req, res) => {
   const anthropicKey = process.env.ANTHROPIC_API_KEY;
 
   console.log("Keys present:", { anthropic: !!anthropicKey });
+  console.log("ENV keys:", Object.keys(process.env));
 
   if (!anthropicKey)
     return res.status(500).json({ error: "No API key set. Add ANTHROPIC_API_KEY to backend/.env" });
