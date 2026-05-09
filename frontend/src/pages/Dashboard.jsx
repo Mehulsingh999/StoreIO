@@ -45,7 +45,7 @@ export default function Dashboard() {
   return (
     <div className="si-page" style={{ padding: "32px 36px", maxWidth: 1280 }}>
       {/* Welcome banner */}
-      <div style={{
+      <div className="si-welcome-banner" style={{
         background: "linear-gradient(135deg,rgba(59,130,246,.08),rgba(99,102,241,.06))",
         border: `1px solid rgba(59,130,246,.14)`,
         borderRadius: 16, padding: "22px 26px", marginBottom: 28,
@@ -70,7 +70,7 @@ export default function Dashboard() {
       </div>
 
       {/* Stat cards */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(180px,1fr))", gap: 14, marginBottom: 28 }}>
+      <div className="si-stat-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(180px,1fr))", gap: 14, marginBottom: 28 }}>
         {loading ? (
           [0,1,2,3].map(i => (
             <div key={i} style={{ ...card(), minHeight: 100 }}>
@@ -89,7 +89,7 @@ export default function Dashboard() {
       </div>
 
       {/* Content grid */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18 }}>
+      <div className="si-content-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18 }}>
 
         {/* Low stock */}
         <div style={card()}>

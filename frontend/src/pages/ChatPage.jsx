@@ -143,7 +143,7 @@ export default function ChatPage() {
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100vh", padding: "24px 32px" }}>
+    <div className="si-chat-page" style={{ display: "flex", flexDirection: "column", height: "100vh", padding: "24px 32px" }}>
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 18, paddingBottom: 18, borderBottom: `1px solid ${C.border}` }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>

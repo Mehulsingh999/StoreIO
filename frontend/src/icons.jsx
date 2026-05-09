@@ -186,3 +186,11 @@ export const RefreshCw = (p) => (
     <path d="M8 16H3v5"/>
   </Icon>
 );
+
+export const Menu = (p) => (
+  <Icon {...p}>
+    <line x1="4" x2="20" y1="6"  y2="6"/>
+    <line x1="4" x2="20" y1="12" y2="12"/>
+    <line x1="4" x2="20" y1="18" y2="18"/>
+  </Icon>
+);

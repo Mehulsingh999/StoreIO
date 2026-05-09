@@ -5,7 +5,7 @@ import { api } from "./api";
 import { C, btn, input, injectGlobalStyles } from "./styles";
 import { AppProvider } from "./contexts/AppContext";
 import {
-  LayoutDashboard, Package, Store, Upload, Bot, LogOut, Eye, EyeOff,
+  LayoutDashboard, Package, Store, Upload, Bot, LogOut, Eye, EyeOff, Menu, X,
 } from "./icons";
 import Dashboard    from "./pages/Dashboard";
 import InventoryPage from "./pages/InventoryPage";
@@ -49,7 +49,7 @@ function Login({ onLogin }) {
         background:"radial-gradient(circle,rgba(6,182,212,.07) 0%,transparent 68%)", pointerEvents:"none" }} />
 
       {/* Glass card */}
-      <div style={{
+      <div className="si-login-card" style={{
         width: 420, position: "relative", zIndex: 1,
         background: "rgba(13,17,23,0.85)",
         backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)",
@@ -168,18 +168,33 @@ const NAV = [
   { to: "/chat",      Icon: Bot,              label: "AI Chat"    },
 ];
 
-function Sidebar({ user, onLogout }) {
+function Sidebar({ user, onLogout, isOpen, onClose }) {
   const initial = user.username?.[0]?.toUpperCase() ?? "?";
 
   return (
-    <div style={{
+    <div className={`si-sidebar${isOpen ? " si-sidebar-open" : ""}`} style={{
       width: 240, minHeight: "100vh",
       background: "linear-gradient(180deg,#0c1018 0%,#080c12 60%,#060910 100%)",
       borderRight: "1px solid rgba(30,45,61,.8)",
       display: "flex", flexDirection: "column",
       padding: "22px 14px", flexShrink: 0,
       boxShadow: "2px 0 20px rgba(0,0,0,.3)",
+      position: "relative",
     }}>
+      {/* Mobile close button */}
+      <button
+        className="si-hamburger"
+        onClick={onClose}
+        style={{
+          position: "absolute", top: 14, right: 14,
+          background: "none", border: "none",
+          color: C.muted, cursor: "pointer",
+          padding: 4,
+        }}
+      >
+        <X size={18} />
+      </button>
+
       {/* Brand */}
       <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:32, paddingLeft:6 }}>
         <div style={{
@@ -259,6 +274,7 @@ export default function App() {
   const [user, setUser] = useState(() => {
     try { return JSON.parse(localStorage.getItem("user")); } catch { return null; }
   });
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const logout = () => {
     localStorage.removeItem("token");
@@ -272,12 +288,44 @@ export default function App() {
     <BrowserRouter>
       <AppProvider>
         <div style={{ display:"flex", minHeight:"100vh" }}>
-          <Sidebar user={user} onLogout={logout} />
+          {/* Mobile overlay */}
+          {sidebarOpen && (
+            <div className="si-sidebar-overlay" onClick={() => setSidebarOpen(false)} />
+          )}
+
+          <Sidebar user={user} onLogout={logout} isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+
           <main style={{
             flex:1, overflowY:"auto", overflowX:"hidden",
             backgroundImage: "radial-gradient(rgba(255,255,255,.022) 1px,transparent 1px)",
             backgroundSize: "28px 28px",
           }}>
+            {/* Mobile topbar */}
+            <div className="si-topbar">
+              <button
+                className="si-hamburger"
+                onClick={() => setSidebarOpen(true)}
+                style={{ background:"none", border:"none", color:C.text, cursor:"pointer", padding:4 }}
+              >
+                <Menu size={22} />
+              </button>
+              <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                <div style={{
+                  width:26, height:26, borderRadius:7,
+                  background:"linear-gradient(135deg,#3b82f6,#6366f1)",
+                  display:"flex", alignItems:"center", justifyContent:"center",
+                  boxShadow:"0 2px 8px rgba(59,130,246,.35)", flexShrink:0,
+                }}>
+                  <Package size={13} stroke="#fff" />
+                </div>
+                <span style={{
+                  fontFamily:"'Syne',sans-serif", fontSize:15, fontWeight:800, letterSpacing:-.3,
+                  background:"linear-gradient(135deg,#f1f5f9,#93c5fd)",
+                  WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text",
+                }}>StoreIO</span>
+              </div>
+            </div>
+
             <Routes>
               <Route path="/"          element={<Dashboard />} />
               <Route path="/inventory" element={<InventoryPage />} />

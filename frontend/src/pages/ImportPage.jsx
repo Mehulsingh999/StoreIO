@@ -66,7 +66,7 @@ export default function ImportPage() {
       <PageHeader title="Import Excel" subtitle="Bulk-import products and inventory from a spreadsheet" />
 
       <Step num="1" title="Download the template">
-        <div style={{
+        <div className="si-import-dl-card" style={{
           ...card(), display: "flex", justifyContent: "space-between", alignItems: "center",
           padding: "18px 20px",
         }}>
@@ -180,7 +180,7 @@ export default function ImportPage() {
                 </span>
               </div>
 
-              <div style={{ display: "flex", gap: 28, marginBottom: result.errors?.length ? 18 : 0 }}>
+              <div className="si-import-stats" style={{ display: "flex", gap: 28, marginBottom: result.errors?.length ? 18 : 0 }}>
                 {[
                   { label: "Imported", value: result.imported, color: C.green },
                   { label: "Skipped",  value: result.skipped,  color: C.yellow },

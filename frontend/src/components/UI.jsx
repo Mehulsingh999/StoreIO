@@ -12,7 +12,7 @@ const NUM_CLASS = {
 };
 
 export const PageHeader = ({ title, subtitle, actions }) => (
-  <div style={{
+  <div className="si-page-header" style={{
     display: "flex", justifyContent: "space-between", alignItems: "flex-start",
     marginBottom: 28, paddingBottom: 22,
     borderBottom: `1px solid ${C.border}`,
@@ -23,7 +23,11 @@ export const PageHeader = ({ title, subtitle, actions }) => (
       }}>{title}</h1>
       {subtitle && <p style={{ color: C.muted, fontSize: 13 }}>{subtitle}</p>}
     </div>
-    {actions && <div style={{ display: "flex", gap: 8, flexShrink: 0, marginLeft: 16 }}>{actions}</div>}
+    {actions && (
+      <div className="si-page-header-actions" style={{ display: "flex", gap: 8, flexShrink: 0, marginLeft: 16 }}>
+        {actions}
+      </div>
+    )}
   </div>
 );
 

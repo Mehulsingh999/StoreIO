@@ -170,6 +170,116 @@ export const injectGlobalStyles = () => {
       transform: translateY(-2px);
       box-shadow: 0 14px 44px rgba(0,0,0,.55), 0 0 0 1px rgba(59,130,246,.1) !important;
     }
+
+    /* ── Sidebar overlay (mobile) ── */
+    .si-sidebar-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.55);
+      z-index: 99;
+      backdrop-filter: blur(3px);
+      -webkit-backdrop-filter: blur(3px);
+    }
+
+    /* ── Mobile topbar & hamburger — hidden on desktop ── */
+    .si-topbar    { display: none; }
+    .si-hamburger { display: none !important; }
+
+    /* ── Mobile breakpoint ── */
+    @media (max-width: 767px) {
+      /* Sidebar slides in as fixed drawer */
+      .si-sidebar {
+        position: fixed !important;
+        top: 0; left: 0; bottom: 0;
+        height: 100vh; height: 100dvh;
+        z-index: 100;
+        transform: translateX(-100%);
+        transition: transform 0.25s ease;
+      }
+      .si-sidebar.si-sidebar-open {
+        transform: translateX(0);
+        box-shadow: 4px 0 32px rgba(0,0,0,.6) !important;
+      }
+
+      /* Topbar visible on mobile */
+      .si-topbar {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        border-bottom: 1px solid rgba(30,45,61,.8);
+        background: #0c1018;
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        flex-shrink: 0;
+      }
+      .si-hamburger { display: flex !important; }
+
+      /* Page padding */
+      .si-page { padding: 20px 16px !important; }
+
+      /* PageHeader stacks vertically */
+      .si-page-header {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 12px !important;
+        padding-bottom: 16px !important;
+      }
+      .si-page-header-actions {
+        width: 100% !important;
+        flex-wrap: wrap !important;
+        margin-left: 0 !important;
+      }
+
+      /* Tables scroll horizontally */
+      .si-table-wrap {
+        overflow: hidden !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+      }
+      .si-table-wrap table { min-width: 580px; }
+
+      /* Login card full-width */
+      .si-login-card {
+        width: calc(100vw - 32px) !important;
+        padding: 28px 20px !important;
+      }
+
+      /* 2-col grids collapse */
+      .si-content-grid-2 { grid-template-columns: 1fr !important; }
+
+      /* Stat grid 2-up on mobile */
+      .si-stat-grid { grid-template-columns: 1fr 1fr !important; }
+
+      /* Always show row actions & outlet delete on touch */
+      .si-row-actions { opacity: 1 !important; }
+      .si-outlet-del  { opacity: 1 !important; }
+
+      /* Chat page height accounts for topbar (~53px) */
+      .si-chat-page {
+        height: calc(100vh - 53px) !important;
+        height: calc(100dvh - 53px) !important;
+        padding: 16px !important;
+      }
+
+      /* Import page download card stacks */
+      .si-import-dl-card {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 12px !important;
+      }
+      .si-import-dl-card a { width: 100%; justify-content: center !important; }
+
+      /* Import stats wrap */
+      .si-import-stats { flex-wrap: wrap !important; gap: 16px 24px !important; }
+
+      /* Welcome banner stacks */
+      .si-welcome-banner {
+        flex-direction: column !important;
+        gap: 12px !important;
+      }
+      .si-welcome-banner > div:last-child { display: none; }
+    }
   `;
   document.head.appendChild(s);
 };

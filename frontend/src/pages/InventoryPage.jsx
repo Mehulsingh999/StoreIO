@@ -264,7 +264,7 @@ export default function InventoryPage() {
       </div>
 
       {/* Table */}
-      <div style={{ ...card(), padding: 0, overflow: "hidden" }}>
+      <div className="si-table-wrap" style={{ ...card(), padding: 0, overflow: "hidden" }}>
         {loading
           ? <div style={{ display: "flex", justifyContent: "center", padding: 48 }}><Spinner /></div>
           : (
