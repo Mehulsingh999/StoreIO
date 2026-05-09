@@ -1,10 +1,12 @@
 // backend/server.js
+
 require("dotenv").config();
-const express   = require("express");
-const cors      = require("cors");
+const express = require("express");
+const cors = require("cors");
 const { dbReady } = require("./db/database");
 
-app.use(cors());
+const app = express(); // ← add this
+
 app.use(cors({ origin: process.env.FRONTEND_URL || "http://localhost:5173" }));
 app.use(express.json({ limit: "10mb" }));
 
