@@ -17,6 +17,9 @@
     "sql.js": "^1.12.0",
     "xlsx": "^0.18.5"
   },
+  "engines": {
+    "node": ">=18"
+  },
   "devDependencies": {
     "jest": "^29.7.0",
     "nodemon": "^3.0.3",
