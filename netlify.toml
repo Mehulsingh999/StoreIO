@@ -1,0 +1,19 @@
+[build]
+  base    = "frontend"
+  command = "npm run build"
+  publish = "dist"
+
+# Proxy /api/* to the backend (Railway or wherever it's deployed).
+# Replace REPLACE_WITH_YOUR_BACKEND_URL with the actual URL, e.g.
+# https://storeio-backend-production.up.railway.app
+[[redirects]]
+  from   = "/api/*"
+  to     = "REPLACE_WITH_YOUR_BACKEND_URL/api/:splat"
+  status = 200
+  force  = true
+
+# SPA catch-all — must be last
+[[redirects]]
+  from   = "/*"
+  to     = "/index.html"
+  status = 200
