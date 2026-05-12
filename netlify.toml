@@ -8,7 +8,7 @@
 # https://storeio-backend-production.up.railway.app
 [[redirects]]
   from   = "/api/*"
-  to     = "REPLACE_WITH_YOUR_BACKEND_URL/api/:splat"
+  to     = "https://storeio-backend-production.up.railway.app/api/:splat"
   status = 200
   force  = true
 
