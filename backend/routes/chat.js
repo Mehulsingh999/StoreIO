@@ -158,28 +158,6 @@ Add a new product:
 - For multi-step setup (add category THEN product), include both actions in one reply — categories run first.
 - Format responses clearly using **bold** for product names and quantities.`;
 
-// ── Provider helper ───────────────────────────────────────────────────────────
-const tryAnthropic = async (system, messages, key) => {
-  const response = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": key,
-      "anthropic-version": "2023-06-01",
-    },
-    body: JSON.stringify({
-      model: "claude-sonnet-4-6",
-      max_tokens: 2000,
-      system,
-      messages,
-    }),
-  });
-  const data = await response.json();
-  if (!response.ok || data.error)
-    throw new Error(`Anthropic error: ${data.error?.message || JSON.stringify(data)}`);
-  return data.content?.filter(c => c.type === "text").map(c => c.text).join("") || "";
-};
-
 // ── POST /api/chat ────────────────────────────────────────────────────────────
 router.post("/", async (req, res) => {
   const { messages } = req.body;
@@ -187,18 +165,33 @@ router.post("/", async (req, res) => {
     return res.status(400).json({ error: "messages array required" });
 
   const anthropicKey = process.env.ANTHROPIC_API_KEY;
-
-  console.log("Keys present:", { anthropic: !!anthropicKey });
-  console.log("ENV keys:", Object.keys(process.env));
-
   if (!anthropicKey)
-    return res.status(500).json({ error: "No API key set. Add ANTHROPIC_API_KEY to backend/.env" });
+    return res.status(500).json({ error: "ANTHROPIC_API_KEY not set in environment" });
 
   try {
     const context = await buildContext();
     const system  = SYSTEM(context);
 
-    const reply = await tryAnthropic(system, messages, anthropicKey);
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": anthropicKey,
+        "anthropic-version": "2023-06-01",
+      },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 2000,
+        system,
+        messages,
+      }),
+    });
+
+    const data = await response.json();
+    if (!response.ok || data.error)
+      return res.status(502).json({ error: `Anthropic error: ${data.error?.message || JSON.stringify(data)}` });
+
+    const reply = data.content?.filter(c => c.type === "text").map(c => c.text).join("") || "";
 
     if (!reply) return res.status(502).json({ error: "Empty response from AI" });
 

@@ -158,7 +158,7 @@ export default function ChatPage() {
           <div>
             <h1 className="si-gradient-title" style={{ fontSize: 18, fontWeight: 700, lineHeight: 1.2, letterSpacing: -.3 }}>AI Assistant</h1>
             <p style={{ color: C.muted, fontSize: 12, marginTop: 2 }}>
-              {provider ? `Powered by ${provider === "gemini" ? "Gemini 2.0 Flash" : "Claude"}` : "Reads and writes live inventory data"}
+              {provider ? `Powered by ${provider === "anthropic" ? "Claude Sonnet 4.5" : provider}` : "Reads and writes live inventory data"}
             </p>
           </div>
         </div>
