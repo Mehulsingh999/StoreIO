@@ -9,16 +9,22 @@ const app = express();
 
 app.use(cors({
   origin: (origin, cb) => {
-    // allow server-to-server / curl / health checks (no Origin header)
     if (!origin) return cb(null, true);
-    const allowed = (process.env.FRONTEND_URL || "").split(",").map(s => s.trim()).filter(Boolean);
-    // dev fallback: allow all
-    if (!allowed.length || process.env.NODE_ENV !== "production") return cb(null, true);
+    const allowed = (process.env.FRONTEND_URL || "")
+      .split(",").map(s => s.trim()).filter(Boolean);
+    if (!allowed.length || process.env.NODE_ENV !== "production")
+      return cb(null, true);
     if (allowed.includes(origin)) return cb(null, true);
-    cb(new Error(`CORS: origin ${origin} not allowed`));
+    cb(new Error(`CORS blocked: ${origin}`));
   },
   credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
 }));
+
+// Handle preflight explicitly — must be before route definitions
+app.options("*", cors());
+
 app.use(express.json({ limit: "10mb" }));
 
 app.use("/api/auth",      require("./routes/auth"));
