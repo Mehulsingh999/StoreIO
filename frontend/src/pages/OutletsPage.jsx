@@ -1,18 +1,26 @@
 // src/pages/OutletsPage.jsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { api } from "../api";
 import { C, btn, input, card } from "../styles";
 import { useApp } from "../contexts/AppContext";
-import { PageHeader, Empty, Alert } from "../components/UI";
+import { PageHeader, Empty, Alert, Skeleton } from "../components/UI";
 import { Store, Plus, Trash2 } from "../icons";
 
 export default function OutletsPage() {
   const { outlets, refreshOutlets } = useApp();
-  const [name, setName]       = useState("");
-  const [address, setAddress] = useState("");
-  const [error, setError]     = useState("");
-  const [adding, setAdding]   = useState(false);
+  const [name, setName]         = useState("");
+  const [address, setAddress]   = useState("");
+  const [error, setError]       = useState("");
+  const [adding, setAdding]     = useState(false);
   const [showForm, setShowForm] = useState(false);
+  const [inv, setInv]           = useState([]);
+  const [invLoading, setInvLoading] = useState(true);
+
+  useEffect(() => {
+    api.getInventory().then(d => {
+      if (Array.isArray(d)) setInv(d);
+    }).finally(() => setInvLoading(false));
+  }, []);
 
   const add = async () => {
     if (!name.trim()) return;
@@ -139,6 +147,59 @@ export default function OutletsPage() {
           </div>
         )
       }
+
+      {/* Outlet Health */}
+      {outlets.length > 0 && (
+        <div style={{ marginTop: 36 }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: C.muted, letterSpacing: 1, textTransform: "uppercase", marginBottom: 14 }}>
+            Outlet Health
+          </div>
+
+          {invLoading
+            ? (
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(220px,1fr))", gap: 12 }}>
+                {[0,1,2].map(i => <div key={i} style={{ height: 96 }}><Skeleton height="100%" style={{ borderRadius: 10 }} /></div>)}
+              </div>
+            )
+            : (
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(220px,1fr))", gap: 12 }}>
+                {outlets.map(o => {
+                  const items    = inv.filter(i => i.outlet_id === o.id);
+                  const units    = items.reduce((s, i) => s + i.quantity, 0);
+                  const low      = items.filter(i => i.low_stock || i.quantity <= (i.low_stock_threshold || 5)).length;
+                  const health   = items.length ? Math.max(0, 100 - (low / items.length) * 100) : 100;
+                  const barColor = health > 80 ? C.green : health > 50 ? C.yellow : C.red;
+
+                  return (
+                    <div key={o.id} style={{
+                      background: C.surface, borderRadius: 12, padding: "14px 16px",
+                      border: `1px solid ${C.border}`,
+                    }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
+                        <div style={{ fontWeight: 600, fontSize: 13, color: C.text }}>{o.name}</div>
+                        {low > 0 && (
+                          <span style={{ background: C.red + "20", color: C.red, fontSize: 10, fontWeight: 700, padding: "2px 6px", borderRadius: 6, border: `1px solid ${C.red}30` }}>
+                            {low} low
+                          </span>
+                        )}
+                      </div>
+                      <div style={{ fontSize: 11, color: C.muted, marginBottom: 10 }}>
+                        {items.length} product{items.length !== 1 ? "s" : ""} · {units} units
+                      </div>
+                      <div style={{ height: 4, background: C.border, borderRadius: 2, overflow: "hidden" }}>
+                        <div style={{ height: "100%", width: `${health}%`, background: barColor, borderRadius: 2, transition: "width .5s ease" }} />
+                      </div>
+                      <div style={{ marginTop: 5, fontSize: 11, color: C.muted }}>
+                        <span style={{ color: barColor, fontWeight: 600 }}>{health.toFixed(0)}%</span> healthy
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )
+          }
+        </div>
+      )}
     </div>
   );
 }

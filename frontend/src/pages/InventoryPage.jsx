@@ -16,6 +16,13 @@ const flattenTree = (nodes, depth = 0, path = "") => {
   return out;
 };
 
+const validateQty = (raw) => {
+  if (raw === "" || raw === undefined) return null;
+  if (!/^-?\d+$/.test(String(raw).trim())) return "Quantity must be a whole number";
+  if (parseInt(raw, 10) < 0) return "Quantity cannot be negative";
+  return null;
+};
+
 // ── CategoryPanel ─────────────────────────────────────────────────────────────
 function CategoryPanel({ selOutlet, categories, onRefresh }) {
   const [name, setName]     = useState("");
@@ -29,15 +36,26 @@ function CategoryPanel({ selOutlet, categories, onRefresh }) {
 
   const del = async (id) => { await api.deleteCategory(id); onRefresh(); };
 
+  const charCount = name.length;
+
   return (
     <div className="si-slide" style={{ ...card(), marginBottom: 16, borderColor: `${C.accent}22` }}>
       <div style={{ fontSize: 12, fontWeight: 700, color: C.muted, letterSpacing: 1, textTransform: "uppercase", marginBottom: 14 }}>
         Manage Categories
       </div>
       <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap" }}>
-        <input className="si-input" style={{ ...input(), maxWidth: 200 }} placeholder="Category name"
-          value={name} onChange={e => setName(e.target.value)}
-          onKeyDown={e => e.key === "Enter" && add()} />
+        <div style={{ position: "relative", maxWidth: 200 }}>
+          <input className="si-input" style={{ ...input(), maxWidth: 200 }} placeholder="Category name"
+            value={name} onChange={e => setName(e.target.value)}
+            onKeyDown={e => e.key === "Enter" && add()}
+            maxLength={120} />
+          {charCount > 80 && (
+            <span style={{
+              position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)",
+              fontSize: 10, color: charCount >= 100 ? C.red : C.yellow, pointerEvents: "none",
+            }}>{charCount}/100</span>
+          )}
+        </div>
         <select className="si-select" style={{ ...input(), maxWidth: 220 }} value={parent} onChange={e => setParent(e.target.value)}>
           <option value="">— Root level —</option>
           {categories.map(c => (
@@ -81,14 +99,29 @@ function CategoryPanel({ selOutlet, categories, onRefresh }) {
 
 // ── AddProductForm ────────────────────────────────────────────────────────────
 function AddProductForm({ selOutlet, categories, onDone }) {
-  const [form, setForm] = useState({ name: "", category_id: "", price: "", sku: "" });
-  const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }));
+  const [form, setForm]         = useState({ name: "", category_id: "", price: "", sku: "" });
+  const [priceError, setPriceError] = useState("");
+
+  const set = (k) => (e) => {
+    const v = e.target.value;
+    setForm(f => ({ ...f, [k]: v }));
+    if (k === "price") {
+      const n = parseFloat(v);
+      if (v !== "" && (isNaN(n) || n < 0 || n > 999999)) {
+        setPriceError("Price must be 0–999,999");
+      } else {
+        setPriceError("");
+      }
+    }
+  };
 
   const add = async () => {
-    if (!form.name.trim() || !form.category_id) return;
+    if (!form.name.trim() || !form.category_id || priceError) return;
     const r = await api.addProduct({ ...form, outlet_id: selOutlet, price: parseFloat(form.price) || 0 });
     if (!r.error) { setForm({ name: "", category_id: "", price: "", sku: "" }); onDone(); }
   };
+
+  const nameLen = form.name.length;
 
   return (
     <div className="si-slide" style={{ ...card(), marginBottom: 16, borderColor: `${C.accent}22` }}>
@@ -96,20 +129,31 @@ function AddProductForm({ selOutlet, categories, onDone }) {
         New Product
       </div>
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-        <input className="si-input" style={{ ...input(), maxWidth: 220 }} placeholder="Product name *"
-          value={form.name} onChange={set("name")} />
+        <div style={{ position: "relative", maxWidth: 220 }}>
+          <input className="si-input" style={{ ...input(), maxWidth: 220 }} placeholder="Product name *"
+            value={form.name} onChange={set("name")} maxLength={120} />
+          {nameLen > 80 && (
+            <span style={{
+              position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)",
+              fontSize: 10, color: nameLen >= 100 ? C.red : C.yellow, pointerEvents: "none",
+            }}>{nameLen}/100</span>
+          )}
+        </div>
         <select className="si-select" style={{ ...input(), maxWidth: 220 }} value={form.category_id} onChange={set("category_id")}>
           <option value="">Select category *</option>
           {categories.map(c => (
             <option key={c.id} value={c.id}>{"  ".repeat(c.depth)}{c.name}</option>
           ))}
         </select>
-        <input className="si-input" style={{ ...input(), maxWidth: 110 }} placeholder="Price $" type="number"
-          value={form.price} onChange={set("price")} />
+        <div>
+          <input className="si-input" style={{ ...input(), maxWidth: 110 }} placeholder="Price $" type="number"
+            value={form.price} onChange={set("price")} min="0" max="999999" />
+          {priceError && <div style={{ color: C.red, fontSize: 11, marginTop: 3 }}>{priceError}</div>}
+        </div>
         <input className="si-input" style={{ ...input(), maxWidth: 140 }} placeholder="SKU (optional)"
           value={form.sku} onChange={set("sku")} />
         <button className="si-btn-primary" style={btn("primary")} onClick={add}
-          disabled={!form.name.trim() || !form.category_id}>
+          disabled={!form.name.trim() || !form.category_id || !!priceError}>
           <Plus size={14} /> Add Product
         </button>
         <button className="si-btn-ghost" style={btn("ghost")} onClick={onDone}>Cancel</button>
@@ -139,6 +183,7 @@ export default function InventoryPage() {
   const [categories, setCategories]     = useState([]);
   const [products, setProducts]         = useState([]);
   const [editQty, setEditQty]           = useState({});
+  const [qtyErrors, setQtyErrors]       = useState({});
   const [saving, setSaving]             = useState({});
   const [saved, setSaved]               = useState({});
   const [filter, setFilter]             = useState("");
@@ -167,18 +212,28 @@ export default function InventoryPage() {
     loadProducts();
     loadCategories();
     setEditQty({});
+    setQtyErrors({});
   }, [loadProducts, loadCategories]);
 
   const saveQty = async (p) => {
     const key  = `${p.id}-${p.outlet_id}`;
-    const newQ = parseInt(editQty[key]);
+    const raw  = editQty[key];
+    const err  = validateQty(raw);
+    if (err) return;
+    const newQ = parseInt(raw, 10);
     if (isNaN(newQ)) return;
+
+    if (p.quantity > 0 && newQ > p.quantity * 10) {
+      if (!confirm(`Set quantity to ${newQ}? That's more than 10× the current stock (${p.quantity}). Confirm?`)) return;
+    }
+
     setSaving(s => ({ ...s, [key]: true }));
     await api.updateQty(p.id, p.outlet_id, { quantity: newQ, prev_qty: p.quantity });
     setSaving(s => ({ ...s, [key]: false }));
     setSaved(s => ({ ...s, [key]: true }));
     setTimeout(() => setSaved(s => { const x = { ...s }; delete x[key]; return x; }), 1400);
     setEditQty(e => { const x = { ...e }; delete x[key]; return x; });
+    setQtyErrors(errs => { const x = { ...errs }; delete x[key]; return x; });
     loadProducts();
   };
 
@@ -281,9 +336,9 @@ export default function InventoryPage() {
               </thead>
               <tbody>
                 {filtered.map((p) => {
-                  const key  = `${p.id}-${p.outlet_id}`;
-                  const low  = p.quantity <= p.threshold;
+                  const key     = `${p.id}-${p.outlet_id}`;
                   const isSaved = saved[key];
+                  const qtyErr  = qtyErrors[key];
 
                   return (
                     <tr key={p.id} className="si-table-row">
@@ -300,31 +355,43 @@ export default function InventoryPage() {
                       </td>
                       <td style={{ padding: "12px 16px", color: C.muted }}>{p.threshold}</td>
                       <td style={{ padding: "12px 16px" }}>
-                        <div className="si-row-actions" style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                          <input type="number"
-                            className="si-input"
-                            style={{ ...input(), width: 72, padding: "5px 8px", fontSize: 12 }}
-                            placeholder={String(p.quantity)}
-                            value={editQty[key] ?? ""}
-                            onChange={e => setEditQty(q => ({ ...q, [key]: e.target.value }))}
-                            onKeyDown={e => e.key === "Enter" && saveQty(p)}
-                          />
-                          {(editQty[key] !== undefined || isSaved) && (
-                            isSaved
-                              ? <div style={{ color: C.green, display: "flex", animation: "popIn .18s ease" }}>
-                                  <CheckCircle size={18} stroke={C.green} />
-                                </div>
-                              : <button className="si-btn-success"
-                                  style={{ ...btn("success"), padding: "5px 10px", fontSize: 12 }}
-                                  onClick={() => saveQty(p)} disabled={saving[key]}>
-                                  {saving[key] ? "…" : "Save"}
-                                </button>
+                        <div>
+                          <div className="si-row-actions" style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                            <input type="number"
+                              className="si-input"
+                              style={{
+                                ...input(), width: 72, padding: "5px 8px", fontSize: 12,
+                                borderColor: qtyErr ? C.red + "88" : undefined,
+                              }}
+                              placeholder={String(p.quantity)}
+                              value={editQty[key] ?? ""}
+                              onChange={e => {
+                                const v = e.target.value;
+                                setEditQty(q => ({ ...q, [key]: v }));
+                                setQtyErrors(errs => ({ ...errs, [key]: validateQty(v) }));
+                              }}
+                              onKeyDown={e => e.key === "Enter" && !qtyErr && saveQty(p)}
+                            />
+                            {(editQty[key] !== undefined || isSaved) && (
+                              isSaved
+                                ? <div style={{ color: C.green, display: "flex", animation: "popIn .18s ease" }}>
+                                    <CheckCircle size={18} stroke={C.green} />
+                                  </div>
+                                : <button className="si-btn-success"
+                                    style={{ ...btn("success"), padding: "5px 10px", fontSize: 12 }}
+                                    onClick={() => saveQty(p)} disabled={saving[key] || !!qtyErr}>
+                                    {saving[key] ? "…" : "Save"}
+                                  </button>
+                            )}
+                            <button className="si-btn-danger"
+                              style={{ ...btn("danger"), padding: "5px 8px", fontSize: 12 }}
+                              onClick={() => delProduct(p)}>
+                              <Trash2 size={13} />
+                            </button>
+                          </div>
+                          {qtyErr && (
+                            <div style={{ color: C.red, fontSize: 11, marginTop: 4 }}>{qtyErr}</div>
                           )}
-                          <button className="si-btn-danger"
-                            style={{ ...btn("danger"), padding: "5px 8px", fontSize: 12 }}
-                            onClick={() => delProduct(p)}>
-                            <Trash2 size={13} />
-                          </button>
                         </div>
                       </td>
                     </tr>
