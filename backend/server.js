@@ -8,7 +8,7 @@ const { dbReady } = require("./db/database");
 const app = express();
 
 const corsOrigin = process.env.NODE_ENV === "production"
-  ? (process.env.FRONTEND_URL || "*")
+  ? ((process.env.FRONTEND_URL || "").replace(/\/+$/, "").replace(/^(https?:\/\/)+/, "https://") || "*")
   : "*";
 app.use(cors({ origin: corsOrigin }));
 app.use(express.json({ limit: "10mb" }));
