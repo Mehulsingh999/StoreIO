@@ -2,6 +2,7 @@
 const getToken = () => localStorage.getItem("token");
 // Set VITE_API_URL in Netlify environment variables to the Railway backend URL
 const BASE = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
+if (import.meta.env.DEV) console.log("[api] BASE =", BASE || "(same-origin)");
 
 const req = async (url, opts = {}) => {
   const token = getToken();

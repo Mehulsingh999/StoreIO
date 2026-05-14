@@ -7,21 +7,17 @@ const { dbReady } = require("./db/database");
 
 const app = express();
 
-const allowedOrigin = (process.env.FRONTEND_URL || "")
-  .replace(/\/+$/, "")
-  .replace(/^(https?:\/\/)+/, "https://");
-
 app.use(cors({
   origin: (origin, cb) => {
-    // No Origin header = health check / Postman / server-to-server — always allow
+    // allow server-to-server / curl / health checks (no Origin header)
     if (!origin) return cb(null, true);
-    // Dev: allow everything
-    if (process.env.NODE_ENV !== "production") return cb(null, true);
-    // Prod: allow only the configured frontend URL (or all if unset)
-    if (!allowedOrigin || origin === allowedOrigin) return cb(null, true);
+    const allowed = (process.env.FRONTEND_URL || "").split(",").map(s => s.trim()).filter(Boolean);
+    // dev fallback: allow all
+    if (!allowed.length || process.env.NODE_ENV !== "production") return cb(null, true);
+    if (allowed.includes(origin)) return cb(null, true);
     cb(new Error(`CORS: origin ${origin} not allowed`));
   },
-  optionsSuccessStatus: 204,
+  credentials: true,
 }));
 app.use(express.json({ limit: "10mb" }));
 
