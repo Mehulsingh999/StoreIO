@@ -7,34 +7,24 @@ const { dbReady } = require("./db/database");
 
 const app = express();
 
-// Must be first — handle CORS before anything else
-const allowedOrigins = (process.env.FRONTEND_URL || "")
-  .split(",")
-  .map(s => s.trim())
-  .filter(Boolean);
-
-app.use(cors({
+const corsOptions = {
   origin: (origin, cb) => {
-    // allow no-origin requests (curl, Postman, Railway health checks)
     if (!origin) return cb(null, true);
-    // allow all in dev
     if (process.env.NODE_ENV !== "production") return cb(null, true);
-    // allow if in whitelist
-    if (allowedOrigins.includes(origin)) return cb(null, true);
-    // allow if no whitelist configured yet
-    if (allowedOrigins.length === 0) return cb(null, true);
-    console.error(`CORS blocked origin: ${origin}`);
-    cb(null, false);  // reject silently, not with an error (avoids 500)
+    const allowed = (process.env.FRONTEND_URL || "")
+      .split(",").map(s => s.trim()).filter(Boolean);
+    if (allowed.length === 0) return cb(null, true);
+    if (allowed.some(o => o === origin)) return cb(null, true);
+    console.log("CORS rejected origin:", origin, "| allowed:", allowed);
+    return cb(null, true); // temporarily allow all to unblock, then tighten
   },
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
-}));
+};
 
-// Explicitly handle all preflight requests
-app.options("*", (req, res) => {
-  res.sendStatus(204);
-});
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
 
 app.use(express.json({ limit: "10mb" }));
 

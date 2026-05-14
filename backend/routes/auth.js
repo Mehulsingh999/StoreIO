@@ -7,6 +7,8 @@ const { get } = require("../db/database");
 const SECRET = process.env.JWT_SECRET || "storeio-secret";
 
 router.post("/login", async (req, res) => {
+  console.log("LOGIN request from origin:", req.headers.origin);
+  console.log("FRONTEND_URL env:", process.env.FRONTEND_URL);
   try {
     const { username, password } = req.body;
     if (!username || !password) return res.status(400).json({ error: "Username and password required" });
