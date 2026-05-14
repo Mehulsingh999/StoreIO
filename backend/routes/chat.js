@@ -62,6 +62,11 @@ const executeActions = async (reply, user = "AI Assistant") => {
       const action = JSON.parse(match[1].trim());
 
       if (action.type === "update_inventory") {
+        const prev = await get(
+          "SELECT quantity FROM inventory WHERE product_id=? AND outlet_id=?",
+          [action.product_id, action.outlet_id]
+        );
+        const prevQty = prev?.quantity ?? 0;
         await run(
           `INSERT INTO inventory (product_id,outlet_id,quantity,low_stock_threshold) VALUES (?,?,?,5)
            ON CONFLICT(product_id,outlet_id) DO UPDATE
@@ -70,7 +75,7 @@ const executeActions = async (reply, user = "AI Assistant") => {
         );
         await run(
           "INSERT INTO restock_log (product_id,outlet_id,qty_added,note,by_user) VALUES (?,?,?,?,?)",
-          [action.product_id, action.outlet_id, action.quantity, action.note || "", user]
+          [action.product_id, action.outlet_id, action.quantity - prevQty, action.note || "", user]
         );
         results.push({ executed: true, type: "update_inventory", product_id: action.product_id, outlet_id: action.outlet_id, quantity: action.quantity });
       }

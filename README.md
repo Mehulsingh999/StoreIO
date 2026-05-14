@@ -51,6 +51,43 @@ Download a pre-filled template from the Import page.
 
 ---
 
+## Deployment
+
+### Railway (backend)
+
+1. Create a new Railway project and connect your repo (or push via CLI).
+2. Set the following environment variables in Railway:
+   - `PORT` — Railway sets this automatically; you can omit it.
+   - `JWT_SECRET` — a long random string (e.g. `openssl rand -hex 32`).
+   - `FRONTEND_URL` — your Netlify URL (set after the Netlify deploy; update post-deploy).
+   - `GEMINI_API_KEY` **or** `ANTHROPIC_API_KEY` — one AI provider key.
+   - `NODE_ENV=production`
+3. Attach a **Volume** to the service, mounted at `/data`. The database file is stored there as `store.db` and survives deploys/restarts.
+4. Deploy. Railway uses `railway.json` (Nixpacks builder, `node server.js` start, `/api/health` health check).
+
+> **DB path**: `database.js` defaults to `/data/store.db`. Override with `DB_PATH` env var if needed for local dev.
+
+---
+
+### Netlify (frontend)
+
+1. Connect your repo to Netlify. In the Netlify UI set **Base directory** to `frontend`.
+2. Build command: `npm run build` · Publish directory: `dist` (both set in `frontend/netlify.toml`).
+3. Add the environment variable:
+   - `VITE_API_URL` — the Railway backend URL (e.g. `https://storeio-backend-production.up.railway.app`).
+4. Deploy. The `netlify.toml` SPA redirect ensures react-router routes don't 404 on reload.
+
+---
+
+### Post-deploy
+
+After both services are live:
+
+- Go back to Railway and set `FRONTEND_URL` to the Netlify site URL (e.g. `https://storeio-web.netlify.app`). This tightens CORS so only your frontend can call the API.
+- Trigger a Railway redeploy to pick up the updated env var.
+
+---
+
 ## What's new in v1.1
 
 - **Fixed**: Gemini API model updated to `gemini-2.0-flash` (1.5-flash was deprecated)

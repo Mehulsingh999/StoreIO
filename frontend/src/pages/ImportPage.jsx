@@ -1,5 +1,5 @@
 // src/pages/ImportPage.jsx
-import { useState, useRef } from "react";
+import React, { useState, useRef } from "react";
 import { api } from "../api";
 import { C, btn, card } from "../styles";
 import { PageHeader, Alert } from "../components/UI";
@@ -88,10 +88,10 @@ export default function ImportPage() {
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "minmax(140px,auto) 1fr", gap: "6px 20px", fontSize: 13 }}>
             {COLUMNS.map(([col, desc]) => (
-              <>
-                <div key={col + "k"} style={{ color: "#93c5fd", fontFamily: "monospace", fontSize: 12 }}>{col}</div>
-                <div key={col + "v"} style={{ color: C.muted, fontSize: 12 }}>{desc}</div>
-              </>
+              <React.Fragment key={col}>
+                <div style={{ color: "#93c5fd", fontFamily: "monospace", fontSize: 12 }}>{col}</div>
+                <div style={{ color: C.muted, fontSize: 12 }}>{desc}</div>
+              </React.Fragment>
             ))}
           </div>
         </div>

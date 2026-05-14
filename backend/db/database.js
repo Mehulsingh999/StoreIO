@@ -5,7 +5,8 @@ const path      = require("path");
 const bcrypt    = require("bcryptjs");
 const fs        = require("fs");
 
-const DB_PATH = process.env.DB_PATH || path.join(__dirname, "store.db");
+// Railway persistent volume at /data; override with DB_PATH env var for local dev
+const DB_PATH = process.env.DB_PATH || "/data/store.db";
 
 let _db = null;
 let _persistTimer = null;

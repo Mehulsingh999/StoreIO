@@ -5,9 +5,12 @@ const express = require("express");
 const cors = require("cors");
 const { dbReady } = require("./db/database");
 
-const app = express(); // ← add this
+const app = express();
 
-app.use(cors({ origin: process.env.FRONTEND_URL || "http://localhost:5173" }));
+const corsOrigin = process.env.NODE_ENV === "production"
+  ? (process.env.FRONTEND_URL || "*")
+  : "*";
+app.use(cors({ origin: corsOrigin }));
 app.use(express.json({ limit: "10mb" }));
 
 app.use("/api/auth",      require("./routes/auth"));
