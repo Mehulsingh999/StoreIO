@@ -11,7 +11,7 @@ app.use(cors({
   origin: (origin, cb) => {
     if (!origin) return cb(null, true);
     const allowed = (process.env.FRONTEND_URL || "")
-      .split(",").map(s => s.trim()).filter(Boolean);
+      .split(",").map(s => s.trim().replace(/\/+$/, "")).filter(Boolean);
     if (!allowed.length || process.env.NODE_ENV !== "production")
       return cb(null, true);
     if (allowed.includes(origin)) return cb(null, true);
